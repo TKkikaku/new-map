@@ -82,7 +82,12 @@
           "土地": "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
           "戸建て": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
           "マンション": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
-          "その他": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"
+          "その他": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+          "収益物件": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+  "軍用地": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
+  "工場・店舗": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
+  "県外・離島": "http://maps.google.com/mapfiles/ms/icons/brown-dot.png",
+  "その他": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"
         };
 
         allMarkers = [];
@@ -104,8 +109,11 @@
             content: `
               <div class="info-window">
                 <strong>${loc.name}</strong><br>
-                <a href="${loc.pdf}" target="_blank">\ud83d\udcc4 概要書</a><br>
-                <em>${loc.sheet}</em>
+                <a href="${loc.pdf}" target="_blank">📄 概要書</a><br>
+      <div>💰 価格：${loc.price} 万円</div>
+      <div>📏 坪単価：${loc.tsubo} 万円</div>
+      <div>👨 紹介元：${loc.agency}</div>
+      <em>${loc.sheet}</em>
               </div>
             `
           });
