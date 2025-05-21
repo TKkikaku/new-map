@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>物件マップ</title>
-  <link rel="icon" href="./logo_512x512.png" />
-  <link rel="manifest" href="./manifest.json" />
-  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="./logo_512x512.png">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#ffffff">
   <style>
     body {
       margin: 0;
@@ -34,27 +34,13 @@
       border: 1px solid #ccc;
       border-radius: 8px;
     }
-    .info-window .info-title {
-      font-size: 14px;
-      font-weight: bold;
-      margin-bottom: 2px;
-    }
-    .info-window .info-category {
-      font-size: 11px;
-      color: #666;
-      margin-bottom: 6px;
-    }
-    .info-window .info-link {
-      display: inline-block;
-      margin: 4px 0;
-      color: #1a73e8;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 12px;
+    .info-window img {
+      width: 100%;
+      height: auto;
+      margin-bottom: 8px;
     }
     .info-window .info-line {
       margin: 2px 0;
-      font-size: 12px;
     }
     .info-window .info-line span {
       font-weight: normal;
@@ -75,7 +61,7 @@
 <body>
   <div id="login-box">
     <h2>パスコードを入力してください</h2>
-    <input type="password" id="passcode-input" placeholder="パスコードを入力" />
+    <input type="password" id="passcode-input" placeholder="パスコードを入力">
     <button onclick="checkPasscode()">ログイン</button>
     <p id="error-message" style="color: red;"></p>
   </div>
@@ -106,9 +92,6 @@
 
   <script>
     const CORRECT_PASSCODE = "Tkkikaku1212!";
-    let map;
-    let allMarkers = [];
-    let selectedCity = "all";
 
     function checkPasscode() {
       const input = document.getElementById("passcode-input").value;
@@ -135,6 +118,9 @@
         initMap();
       }
     };
+
+    let map;
+    let allMarkers = [];
 
     function initMap() {
       const script = document.createElement("script");
@@ -166,6 +152,8 @@
       const citySet = new Set();
 
       locations.forEach((loc) => {
+        if (loc.city) citySet.add(loc.city);
+
         const iconUrl = colors[loc.sheet] || colors["その他"];
 
         const marker = new google.maps.Marker({
@@ -182,13 +170,13 @@
         if (loc.sheet === "名刺") {
           content = `
             <div class="info-window">
-              <div class="info-title">📷 <img src="${loc.image}" alt="名刺画像" style="max-width:100%;height:auto;border:1px solid #ccc;"></div>
-              <div class="info-line">👨‍💼 会社名：<span>${loc.company || ""}</span></div>
-              <div class="info-line">🏢 会社番号：<span>${loc.companyTel || ""}</span></div>
-              <div class="info-line">🧑 担当名：<span>${loc.person || ""}</span></div>
-              <div class="info-line">（${loc.furigana || ""}）</div>
-              <div class="info-line">📞 <a href="tel:${loc.tel || ""}">${loc.tel || ""}</a></div>
-              <div class="info-line">📝 備考：<span>${loc.memo || ""}</span></div>
+              <div class="info-line">📷 <img src="${loc.meishi}" alt="名刺画像"></div>
+              <div class="info-line">👨‍💼 ${loc.company}</div>
+              <div class="info-line">🏢 ${loc.companyNum}</div>
+              <div class="info-line">🧑 ${loc.staff}</div>
+              <div class="info-line">${loc.kana}</div>
+              <div class="info-line">📞 <a href="tel:${loc.tel}">${loc.tel}</a></div>
+              <div class="info-line">📝 ${loc.memo}</div>
             </div>
           `;
         } else {
@@ -210,8 +198,6 @@
         });
 
         allMarkers.push({ marker, sheet: loc.sheet, city: loc.city });
-
-        if (loc.city) citySet.add(loc.city);
       });
 
       const citySelect = document.getElementById("cityFilter");
@@ -226,6 +212,7 @@
     function filterMarkers() {
       const selectedCategory = document.getElementById("filter").value;
       const selectedCity = document.getElementById("cityFilter").value;
+
       allMarkers.forEach(({ marker, sheet, city }) => {
         const matchCategory = selectedCategory === "all" || sheet === selectedCategory;
         const matchCity = selectedCity === "all" || city === selectedCity;
@@ -234,8 +221,6 @@
     }
   </script>
 
-  <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap">
-  </script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap"></script>
 </body>
 </html>
