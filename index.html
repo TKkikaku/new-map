@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>物件マップ</title>
 
     <link rel="apple-touch-icon" sizes="180x180" href="./logo_512x512.png" />
@@ -15,12 +15,14 @@
         margin: 0;
         font-family: sans-serif;
       }
+
       #map {
-        height: calc(100vh - 140px);
+        height: calc(100vh - 70px);
         width: 100%;
       }
+
       .info-window {
-        font-size: 12px;
+        font-size: 14px;
         line-height: 1.4;
         max-width: 240px;
         padding: 8px;
@@ -28,16 +30,19 @@
         border-radius: 8px;
         word-wrap: break-word;
       }
+
       .info-window .info-title {
         font-size: 14px;
         font-weight: bold;
         margin-bottom: 2px;
       }
+
       .info-window .info-category {
         font-size: 11px;
         color: #666;
         margin-bottom: 6px;
       }
+
       .info-window .info-link {
         display: inline-block;
         margin: 4px 0;
@@ -46,19 +51,22 @@
         font-weight: bold;
         font-size: 12px;
       }
+
       .info-window .info-line {
         white-space: nowrap;
-        margin: 2px 0;
       }
+
       .info-window .info-line span {
         font-weight: normal;
       }
+
       select {
         font-size: 1.4rem;
         padding: 6px;
         width: 100%;
         max-width: 300px;
       }
+
       label {
         font-size: 1.4rem;
         display: block;
@@ -70,6 +78,15 @@
       let map;
       let allMarkers = [];
       let selectedCity = "all";
+
+      const customCityOrder = [
+        "名護市", "恩納村", "金武町", "宜野座村", "本部町", "今帰仁村",
+        "大宜味村", "国頭村", "東村",
+        "沖縄市", "浦添市", "宜野湾市", "うるま市", "読谷村", "西原町",
+        "北谷町", "中城村", "北中城村", "嘉手納町",
+        "那覇市", "豊見城市", "糸満市", "南風原町", "南城市", "与那原町", "八重瀬町",
+        "石垣市", "宮古島市", "その他"
+      ];
 
       function initMap() {
         const script = document.createElement("script");
@@ -85,20 +102,26 @@
         });
 
         const colors = {
-          "土地": "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-          "戸建て": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-          "マンション": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
-          "収益物件": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
-          "軍用地": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
+          土地: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+          戸建て: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+          マンション: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+          収益物件: "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+          軍用地: "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
           "工場・店舗": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
           "県外・離島": "http://maps.google.com/mapfiles/ms/icons/brown-dot.png",
-          "その他": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"
+          その他: "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
         };
 
         allMarkers = [];
         const infoWindow = new google.maps.InfoWindow();
 
-        const citySet = new Set();
+        const citySelect = document.getElementById("cityFilter");
+        customCityOrder.forEach(city => {
+          const option = document.createElement("option");
+          option.value = city;
+          option.textContent = city;
+          citySelect.appendChild(option);
+        });
 
         locations.forEach((loc) => {
           const iconUrl = colors[loc.sheet] || colors["その他"];
@@ -129,20 +152,7 @@
             infoWindow.open(map, marker);
           });
 
-          if (loc.city) {
-            citySet.add(loc.city);
-          }
-
           allMarkers.push({ marker, sheet: loc.sheet, city: loc.city });
-        });
-
-        const citySelect = document.getElementById("cityFilter");
-        citySelect.innerHTML = '<option value="all">すべて表示</option>';
-        [...citySet].sort().forEach((city) => {
-          const option = document.createElement("option");
-          option.value = city;
-          option.textContent = city;
-          citySelect.appendChild(option);
         });
       }
 
@@ -159,6 +169,7 @@
       }
     </script>
   </head>
+
   <body onload="initMap()">
     <div class="filter-box" style="padding:10px;background:#f5f5f5">
       <label for="filter">カテゴリで絞り込み：</label>
@@ -179,9 +190,12 @@
         <option value="all">すべて表示</option>
       </select>
     </div>
+
     <div id="map"></div>
-    <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap">
-    </script>
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap"
+    ></script>
   </body>
 </html>
