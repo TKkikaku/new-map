@@ -144,89 +144,95 @@
       }
 
       function displayMarkers(locations) {
-        map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 26.2124, lng: 127.6809 },
-          zoom: 10,
-        });
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: 26.2124, lng: 127.6809 },
+    zoom: 10,
+  });
 
-        const cityOrder = [
-          "名護市","恩納村","金武町","宜野座村","本部町","今帰仁村","大宜味村","国頭村","東村",
-          "沖縄市","うるま市","浦添市","宜野湾市","読谷村","嘉手納町","北谷町","中城村","西原町",
-          "那覇市","豊見城市","糸満市","南風原町","与那原町","八重瀬町",
-          "石垣市","宮古島市","その他"
-        ];
+  const cityOrder = [
+    "名護市","恩納村","金武町","宜野座村","本部町","今帰仁村","大宜味村","国頭村","東村",
+    "沖縄市","うるま市","浦添市","宜野湾市","読谷村","嘉手納町","北谷町","中城村","西原町",
+    "那覇市","豊見城市","糸満市","南風原町","与那原町","八重瀬町",
+    "石垣市","宮古島市","その他"
+  ];
 
-        const citySet = new Set();
-        const infoWindow = new google.maps.InfoWindow();
-        allMarkers = [];
+  const citySet = new Set();
+  const infoWindow = new google.maps.InfoWindow();
+  allMarkers = [];
 
-        locations.forEach(loc => {
-          const iconUrl = "http://maps.google.com/mapfiles/ms/icons/" +
-            (loc.sheet === "名刺" ? "orange" :
-            loc.sheet === "土地" ? "red" :
-            loc.sheet === "戸建て" ? "blue" :
-            loc.sheet === "マンション" ? "green" :
-            loc.sheet === "収益物件" ? "yellow" :
-            loc.sheet === "軍用地" ? "purple" :
-            loc.sheet === "工場・店舗" ? "pink" :
-            loc.sheet === "県外・離島" ? "brown" : "orange") + "-dot.png";
+  locations.forEach(loc => {
+    const iconUrl = "http://maps.google.com/mapfiles/ms/icons/" +
+      (loc.sheet === "名刺" ? "orange" :
+       loc.sheet === "土地" ? "red" :
+       loc.sheet === "戸建て" ? "blue" :
+       loc.sheet === "マンション" ? "green" :
+       loc.sheet === "収益物件" ? "yellow" :
+       loc.sheet === "軍用地" ? "purple" :
+       loc.sheet === "工場・店舗" ? "pink" :
+       loc.sheet === "県外・離島" ? "brown" : "orange") + "-dot.png";
 
-          const marker = new google.maps.Marker({
-            position: { lat: loc.lat, lng: loc.lng },
-            map: map,
-            title: loc.name,
-            icon: {
-              url: iconUrl,
-              scaledSize: new google.maps.Size(60, 60)
-            }
-          });
-
-          let content;
-          if (loc.sheet === "名刺") {
-            content = `
-              <div class="info-window">
-                <div class="info-title">📷 <br><img src="${loc.image}" style="width:100%;max-width:200px;"></div>
-                <div class="info-line">👨‍💼 会社名：<span>${loc.company || ""}</span></div>
-                <div class="info-line">🏢 会社番号：<span>${loc.companytel || ""}</span></div>
-                <div class="info-line">🧑 担当名：<span>${loc.name}</span></div>
-                <div class="info-line">📛 フリガナ：<span>${loc.kana || ""}</span></div>
-                <div class="info-line">📞 担当番号：<a href="tel:${loc.tel}">${loc.tel}</a></div>
-                <div class="info-line">📝 備考：<span>${loc.memo || ""}</span></div>
-              </div>
-            `;
-          } else {
-            content = `
-              <div class="info-window">
-                <div class="info-title">${loc.name}</div>
-                <div class="info-category">${loc.sheet}</div>
-                <a class="info-link" href="${loc.pdf}" target="_blank">📄 概要書</a>
-                <div class="info-line">💰 価格：<span>${loc.price} 万円</span></div>
-                <div class="info-line">📏 坪単価：<span>${loc.tsubo} 万円</span></div>
-                <div class="info-line">👤 紹介元：<span>${loc.agency}</span></div>
-              </div>
-            `;
-            if (loc.city) citySet.add(loc.city);
-          }
-
-          marker.addListener("click", () => {
-            infoWindow.setContent(content);
-            infoWindow.open(map, marker);
-          });
-
-          allMarkers.push({ marker, sheet: loc.sheet, city: loc.city || "" });
-        });
-
-        const citySelect = document.getElementById("cityFilter");
-        citySelect.innerHTML = '<option value="all">すべて表示</option>';
-        cityOrder.forEach(city => {
-          if (citySet.has(city)) {
-            const option = document.createElement("option");
-            option.value = city;
-            option.textContent = city;
-            citySelect.appendChild(option);
-          }
-        });
+    const marker = new google.maps.Marker({
+      position: { lat: loc.lat, lng: loc.lng },
+      map: map,
+      title: loc.name,
+      icon: {
+        url: iconUrl,
+        scaledSize: new google.maps.Size(60, 60)
       }
+    });
+
+    let content = "";
+
+    if (loc.sheet === "名刺") {
+  content = `
+    <div class="info-window">
+      <div class="info-title">📷<br><img src="${loc.image}" style="width:100%;max-width:200px;"></div>
+      <div class="info-line">👨‍💼 会社名：<span>${loc.name || ""}</span></div>
+      <div class="info-line">🏢 会社番号：<span>${loc.companyNumber || ""}</span></div>
+      <div class="info-line">🧑 担当名：<span>${loc.person || ""}</span></div>
+      <div class="info-line">📛 フリガナ：<span>${loc.furigana || ""}</span></div>
+      <div class="info-line">📞 担当番号：<a href="tel:${loc.phone}">${loc.phone}</a></div>
+      <div class="info-line">📝 備考：<span>${loc.note || ""}</span></div>
+    </div>
+  `;
+} else {
+      content = `
+        <div class="info-window">
+          <div class="info-title">${loc.name}</div>
+          <div class="info-category">${loc.sheet}</div>
+          <a class="info-link" href="${loc.pdf}" target="_blank">📄 概要書</a>
+          <div class="info-line">💰 価格：<span>${loc.price} 万円</span></div>
+          <div class="info-line">📏 坪単価：<span>${loc.tsubo} 万円</span></div>
+          <div class="info-line">👤 紹介元：<span>${loc.agency}</span></div>
+        </div>
+      `;
+      if (loc.city) citySet.add(loc.city);
+    }
+
+    marker.addListener("click", () => {
+      infoWindow.setContent(content);
+      infoWindow.open(map, marker);
+    });
+
+    allMarkers.push({
+      marker,
+      sheet: loc.sheet,
+      city: loc.city || ""
+    });
+  });
+
+  // 市区町村のプルダウン生成
+  const citySelect = document.getElementById("cityFilter");
+  citySelect.innerHTML = '<option value="all">すべて表示</option>';
+  cityOrder.forEach(city => {
+    if (citySet.has(city)) {
+      const option = document.createElement("option");
+      option.value = city;
+      option.textContent = city;
+      citySelect.appendChild(option);
+    }
+  });
+}
 
       function filterMarkers() {
         const selectedCategory = document.getElementById("filter").value;
