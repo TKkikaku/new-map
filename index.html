@@ -1,4 +1,3 @@
-<!-- 完全対応版 HTMLコード -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -20,7 +19,7 @@
       justify-content: center;
       height: 100vh;
     }
-    #map, .filter-box {
+    #map, .filter-box, .city-filter-box {
       display: none;
     }
     #map {
@@ -30,20 +29,32 @@
     .info-window {
       font-size: 12px;
       line-height: 1.4;
-      max-width: 260px;
+      max-width: 240px;
       padding: 8px;
       border: 1px solid #ccc;
       border-radius: 8px;
-      word-break: break-word;
     }
-    .info-window img {
-      width: 100%;
-      max-height: 150px;
-      object-fit: contain;
+    .info-window .info-title {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+    .info-window .info-category {
+      font-size: 11px;
+      color: #666;
       margin-bottom: 6px;
     }
+    .info-window .info-link {
+      display: inline-block;
+      margin: 4px 0;
+      color: #1a73e8;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 12px;
+    }
     .info-window .info-line {
-      margin: 3px 0;
+      margin: 2px 0;
+      font-size: 12px;
     }
     .info-window .info-line span {
       font-weight: normal;
@@ -84,10 +95,20 @@
     </select>
   </div>
 
+  <div class="city-filter-box" style="padding:10px;background:#f0f0f0">
+    <label for="cityFilter">市区町村で絞り込み：</label>
+    <select id="cityFilter" onchange="filterMarkers()">
+      <option value="all">すべて表示</option>
+    </select>
+  </div>
+
   <div id="map"></div>
 
   <script>
     const CORRECT_PASSCODE = "Tkkikaku1212!";
+    let map;
+    let allMarkers = [];
+    let selectedCity = "all";
 
     function checkPasscode() {
       const input = document.getElementById("passcode-input").value;
@@ -97,6 +118,7 @@
         document.getElementById("login-box").style.display = "none";
         document.getElementById("map").style.display = "block";
         document.querySelector(".filter-box").style.display = "block";
+        document.querySelector(".city-filter-box").style.display = "block";
         initMap();
       } else {
         error.textContent = "パスコードが違います";
@@ -109,12 +131,10 @@
         document.getElementById("login-box").style.display = "none";
         document.getElementById("map").style.display = "block";
         document.querySelector(".filter-box").style.display = "block";
+        document.querySelector(".city-filter-box").style.display = "block";
         initMap();
       }
     };
-
-    let map;
-    let allMarkers = [];
 
     function initMap() {
       const script = document.createElement("script");
@@ -143,6 +163,8 @@
       const infoWindow = new google.maps.InfoWindow();
       allMarkers = [];
 
+      const citySet = new Set();
+
       locations.forEach((loc) => {
         const iconUrl = colors[loc.sheet] || colors["その他"];
 
@@ -156,16 +178,17 @@
           },
         });
 
-        let content;
+        let content = "";
         if (loc.sheet === "名刺") {
           content = `
             <div class="info-window">
-              <img src="${loc.image}" alt="名刺画像" />
-              <div class="info-line">👨‍💼 会社名：<span>${loc.company}</span></div>
-              <div class="info-line">🏢 会社番号：<span>${loc.companyTel}</span></div>
-              <div class="info-line">🧑 担当名：<span>${loc.agent}</span></div>
-              <div class="info-line">📞 <a href="tel:${loc.agentTel}">${loc.agentTel}</a></div>
-              <div class="info-line">📝 備考：<span>${loc.memo}</span></div>
+              <div class="info-title">📷 <img src="${loc.image}" alt="名刺画像" style="max-width:100%;height:auto;border:1px solid #ccc;"></div>
+              <div class="info-line">👨‍💼 会社名：<span>${loc.company || ""}</span></div>
+              <div class="info-line">🏢 会社番号：<span>${loc.companyTel || ""}</span></div>
+              <div class="info-line">🧑 担当名：<span>${loc.person || ""}</span></div>
+              <div class="info-line">（${loc.furigana || ""}）</div>
+              <div class="info-line">📞 <a href="tel:${loc.tel || ""}">${loc.tel || ""}</a></div>
+              <div class="info-line">📝 備考：<span>${loc.memo || ""}</span></div>
             </div>
           `;
         } else {
@@ -186,14 +209,27 @@
           infoWindow.open(map, marker);
         });
 
-        allMarkers.push({ marker, sheet: loc.sheet });
+        allMarkers.push({ marker, sheet: loc.sheet, city: loc.city });
+
+        if (loc.city) citySet.add(loc.city);
+      });
+
+      const citySelect = document.getElementById("cityFilter");
+      citySet.forEach(city => {
+        const option = document.createElement("option");
+        option.value = city;
+        option.textContent = city;
+        citySelect.appendChild(option);
       });
     }
 
     function filterMarkers() {
-      const selected = document.getElementById("filter").value;
-      allMarkers.forEach(({ marker, sheet }) => {
-        marker.setMap(selected === "all" || sheet === selected ? map : null);
+      const selectedCategory = document.getElementById("filter").value;
+      const selectedCity = document.getElementById("cityFilter").value;
+      allMarkers.forEach(({ marker, sheet, city }) => {
+        const matchCategory = selectedCategory === "all" || sheet === selectedCategory;
+        const matchCity = selectedCity === "all" || city === selectedCity;
+        marker.setMap(matchCategory && matchCity ? map : null);
       });
     }
   </script>
