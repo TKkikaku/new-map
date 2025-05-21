@@ -12,8 +12,18 @@
         margin: 0;
         font-family: sans-serif;
       }
+      #login-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      #map, .filter-box, .city-filter-box {
+        display: none;
+      }
       #map {
-        height: calc(100vh - 130px);
+        height: calc(100vh - 140px);
         width: 100%;
       }
       .info-window {
@@ -24,26 +34,30 @@
         border: 1px solid #ccc;
         border-radius: 8px;
       }
-      .info-window img {
-        max-width: 100%;
-        height: auto;
-        margin-bottom: 4px;
+      .info-window .info-title {
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 2px;
+      }
+      .info-window .info-category {
+        font-size: 11px;
+        color: #666;
+        margin-bottom: 6px;
+      }
+      .info-window .info-link {
+        display: inline-block;
+        margin: 4px 0;
+        color: #1a73e8;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 12px;
       }
       .info-window .info-line {
         margin: 2px 0;
+        font-size: 12px;
       }
-      .info-window a {
-        color: #1a73e8;
-        text-decoration: none;
-      }
-      .filter-box, .city-filter-box {
-        padding: 10px;
-        background: #f5f5f5;
-      }
-      label {
-        font-size: 1.4rem;
-        display: block;
-        margin-bottom: 5px;
+      .info-window .info-line span {
+        font-weight: normal;
       }
       select {
         font-size: 1.4rem;
@@ -51,10 +65,23 @@
         width: 100%;
         max-width: 300px;
       }
+      label {
+        font-size: 1.4rem;
+        display: block;
+        margin-bottom: 5px;
+      }
     </style>
   </head>
+
   <body>
-    <div class="filter-box">
+    <div id="login-box">
+      <h2>パスコードを入力してください</h2>
+      <input type="password" id="passcode-input" placeholder="パスコードを入力" />
+      <button onclick="checkPasscode()">ログイン</button>
+      <p id="error-message" style="color: red;"></p>
+    </div>
+
+    <div class="filter-box" style="padding:10px;background:#f5f5f5">
       <label for="filter">カテゴリで絞り込み：</label>
       <select id="filter" onchange="filterMarkers()">
         <option value="all">すべて表示</option>
@@ -68,21 +95,51 @@
         <option value="名刺">名刺</option>
       </select>
     </div>
-    <div class="city-filter-box">
-      <label for="cityFilter">市町村で絞り込み：</label>
+
+    <div class="city-filter-box" style="padding:10px;background:#f0f0f0">
+      <label for="cityFilter">市区町村で絞り込み：</label>
       <select id="cityFilter" onchange="filterMarkers()">
         <option value="all">すべて表示</option>
       </select>
     </div>
+
     <div id="map"></div>
+
     <script>
+      const CORRECT_PASSCODE = "Tkkikaku1212!";
+
+      function checkPasscode() {
+        const input = document.getElementById("passcode-input").value;
+        const error = document.getElementById("error-message");
+        if (input === CORRECT_PASSCODE) {
+          localStorage.setItem("tk_passcode", input);
+          document.getElementById("login-box").style.display = "none";
+          document.getElementById("map").style.display = "block";
+          document.querySelector(".filter-box").style.display = "block";
+          document.querySelector(".city-filter-box").style.display = "block";
+          initMap();
+        } else {
+          error.textContent = "パスコードが違います";
+        }
+      }
+
+      window.onload = () => {
+        const saved = localStorage.getItem("tk_passcode");
+        if (saved === CORRECT_PASSCODE) {
+          document.getElementById("login-box").style.display = "none";
+          document.getElementById("map").style.display = "block";
+          document.querySelector(".filter-box").style.display = "block";
+          document.querySelector(".city-filter-box").style.display = "block";
+          initMap();
+        }
+      };
+
       let map;
       let allMarkers = [];
-      let cityList = new Set();
 
       function initMap() {
         const script = document.createElement("script");
-        script.src = "https://script.google.com/macros/s/YOUR_DEPLOYED_WEB_APP_URL/exec?callback=displayMarkers";
+        script.src = "https://script.google.com/macros/s/AKfycbyj9JRN6Wuyzwq92QUeULCcKM9yNwQClzlpnWuYX5MQbwfxbWcUsrzLZik6W9ldgPm5IA/exec?callback=displayMarkers";
         document.body.appendChild(script);
       }
 
@@ -92,23 +149,27 @@
           zoom: 10,
         });
 
-        const colors = {
-          土地: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-          戸建て: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-          マンション: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
-          収益物件: "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
-          軍用地: "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
-          "工場・店舗": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
-          "県外・離島": "http://maps.google.com/mapfiles/ms/icons/brown-dot.png",
-          名刺: "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
-        };
+        const cityOrder = [
+          "名護市","恩納村","金武町","宜野座村","本部町","今帰仁村","大宜味村","国頭村","東村",
+          "沖縄市","うるま市","浦添市","宜野湾市","読谷村","嘉手納町","北谷町","中城村","西原町",
+          "那覇市","豊見城市","糸満市","南風原町","与那原町","八重瀬町",
+          "石垣市","宮古島市","その他"
+        ];
 
+        const citySet = new Set();
         const infoWindow = new google.maps.InfoWindow();
         allMarkers = [];
-        cityList.clear();
 
-        locations.forEach((loc) => {
-          const iconUrl = colors[loc.sheet] || colors["その他"];
+        locations.forEach(loc => {
+          const iconUrl = "http://maps.google.com/mapfiles/ms/icons/" +
+            (loc.sheet === "名刺" ? "orange" :
+            loc.sheet === "土地" ? "red" :
+            loc.sheet === "戸建て" ? "blue" :
+            loc.sheet === "マンション" ? "green" :
+            loc.sheet === "収益物件" ? "yellow" :
+            loc.sheet === "軍用地" ? "purple" :
+            loc.sheet === "工場・店舗" ? "pink" :
+            loc.sheet === "県外・離島" ? "brown" : "orange") + "-dot.png";
 
           const marker = new google.maps.Marker({
             position: { lat: loc.lat, lng: loc.lng },
@@ -116,21 +177,21 @@
             title: loc.name,
             icon: {
               url: iconUrl,
-              scaledSize: new google.maps.Size(60, 60),
-            },
+              scaledSize: new google.maps.Size(60, 60)
+            }
           });
 
-          let content = "";
+          let content;
           if (loc.sheet === "名刺") {
             content = `
               <div class="info-window">
-                <div class="info-line">📷<br><img src="${loc.image}" alt="名刺画像" /></div>
-                <div class="info-line">👨‍💼 ${loc.company}</div>
-                <div class="info-line">🏢 ${loc.company_number}</div>
-                <div class="info-line">🧑 ${loc.person}</div>
-                <div class="info-line">${loc.kana}</div>
-                <div class="info-line">📞 <a href="tel:${loc.phone}">${loc.phone}</a></div>
-                <div class="info-line">📝 ${loc.memo}</div>
+                <div class="info-title">📷 <br><img src="${loc.image}" style="width:100%;max-width:200px;"></div>
+                <div class="info-line">👨‍💼 会社名：<span>${loc.company || ""}</span></div>
+                <div class="info-line">🏢 会社番号：<span>${loc.companytel || ""}</span></div>
+                <div class="info-line">🧑 担当名：<span>${loc.name}</span></div>
+                <div class="info-line">📛 フリガナ：<span>${loc.kana || ""}</span></div>
+                <div class="info-line">📞 担当番号：<a href="tel:${loc.tel}">${loc.tel}</a></div>
+                <div class="info-line">📝 備考：<span>${loc.memo || ""}</span></div>
               </div>
             `;
           } else {
@@ -144,6 +205,7 @@
                 <div class="info-line">👤 紹介元：<span>${loc.agency}</span></div>
               </div>
             `;
+            if (loc.city) citySet.add(loc.city);
           }
 
           marker.addListener("click", () => {
@@ -151,25 +213,13 @@
             infoWindow.open(map, marker);
           });
 
-          allMarkers.push({ marker, sheet: loc.sheet, city: loc.city });
-          if (loc.city) cityList.add(loc.city);
+          allMarkers.push({ marker, sheet: loc.sheet, city: loc.city || "" });
         });
 
-        updateCityDropdown();
-      }
-
-      function updateCityDropdown() {
         const citySelect = document.getElementById("cityFilter");
         citySelect.innerHTML = '<option value="all">すべて表示</option>';
-
-        const cityOrder = [
-          "名護市", "宜野座村", "金武町", "恩納村", "うるま市", "沖縄市", "北谷町", "嘉手納町",
-          "読谷村", "中城村", "北中城村", "西原町", "浦添市", "那覇市", "豊見城市", "南風原町",
-          "八重瀬町", "糸満市", "与那原町", "南城市", "その他"
-        ];
-
         cityOrder.forEach(city => {
-          if (cityList.has(city)) {
+          if (citySet.has(city)) {
             const option = document.createElement("option");
             option.value = city;
             option.textContent = city;
@@ -181,7 +231,6 @@
       function filterMarkers() {
         const selectedCategory = document.getElementById("filter").value;
         const selectedCity = document.getElementById("cityFilter").value;
-
         allMarkers.forEach(({ marker, sheet, city }) => {
           const matchCategory = selectedCategory === "all" || sheet === selectedCategory;
           const matchCity = selectedCity === "all" || city === selectedCity;
@@ -189,10 +238,9 @@
         });
       }
     </script>
-    <script
-      async
-      defer
-      src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"
-    ></script>
+
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap">
+    </script>
   </body>
 </html>
