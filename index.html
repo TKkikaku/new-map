@@ -1,191 +1,127 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>物件マップ</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="./logo_512x512.png" />
-  <link rel="icon" href="./logo_512x512.png" />
-  <meta name="theme-color" content="#ffffff" />
-  <link rel="manifest" href="./manifest.json" />
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-    }
-    #map {
-      height: calc(100vh - 140px);
-      width: 100%;
-    }
-    .info-window {
-      font-size: 14px;
-      line-height: 1.4;
-      max-width: 240px;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      word-wrap: break-word;
-    }
-    .info-window .info-title {
-      font-size: 14px;
-      font-weight: bold;
-      margin-bottom: 2px;
-    }
-    .info-window .info-category {
-      font-size: 11px;
-      color: #666;
-      margin-bottom: 6px;
-    }
-    .info-window .info-link {
-      display: inline-block;
-      margin: 4px 0;
-      color: #1a73e8;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 12px;
-    }
-    .info-window .info-line {
-      white-space: nowrap;
-      font-size: 12px;
-    }
-    .info-window .info-line span {
-      font-weight: normal;
-    }
-    select {
-      font-size: 1.4rem;
-      padding: 6px;
-      width: 100%;
-      max-width: 300px;
-    }
-    label {
-      font-size: 1.4rem;
-      display: block;
-      margin-bottom: 5px;
-    }
-  </style>
-  <script>
-    let map;
-    let allMarkers = [];
-    let selectedCity = "all";
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>物件マップ - ログイン制</title>
 
-    function initMap() {
-      const script = document.createElement("script");
-      script.src =
-        "https://script.google.com/macros/s/AKfycbyj9JRN6Wuyzwq92QUeULCcKM9yNwQClzlpnWuYX5MQbwfxbWcUsrzLZik6W9ldgPm5IA/exec?callback=displayMarkers";
-      document.body.appendChild(script);
-    }
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+      }
 
-    function displayMarkers(locations) {
-      map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 26.2124, lng: 127.6809 },
-        zoom: 10,
-      });
+      #login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+      }
 
-      const colors = {
-        "土地": "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-        "戸建て": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-        "マンション": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
-        "収益物件": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
-        "軍用地": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
-        "工場・店舗": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
-        "県外・離島": "http://maps.google.com/mapfiles/ms/icons/brown-dot.png",
-        "その他": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
-      };
+      #login-box {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
 
-      allMarkers = [];
-      const infoWindow = new google.maps.InfoWindow();
+      #map {
+        height: calc(100vh - 70px);
+        width: 100%;
+        display: none;
+      }
 
-      const citySet = new Set();
-      locations.forEach(loc => {
-        if (loc.city) citySet.add(loc.city.trim());
-      });
+      .hidden {
+        display: none;
+      }
 
-      const cityOrder = [
-        "名護市", "恩納村", "金武町", "宜野座村", "本部町", "今帰仁村", "大宜味村", "国頭村", "東村",
-        "沖縄市", "浦添市", "宜野湾市", "うるま市", "読谷村", "西原町", "北谷町", "中城村", "北中城村", "嘉手納町",
-        "那覇市", "豊見城市", "糸満市", "南風原町", "南城市", "与那原町", "八重瀬町",
-        "石垣市", "宮古島市", "その他"
-      ];
+      input[type="password"] {
+        font-size: 1.2rem;
+        padding: 8px;
+        width: 100%;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
 
-      const citySelect = document.getElementById("cityFilter");
-      citySelect.innerHTML = '<option value="all">すべて表示</option>';
-      cityOrder.forEach(city => {
-        if (citySet.has(city)) {
-          const option = document.createElement("option");
-          option.value = city;
-          option.textContent = city;
-          citySelect.appendChild(option);
+      button {
+        margin-top: 12px;
+        padding: 10px 20px;
+        font-size: 1.1rem;
+        border: none;
+        background-color: #1a73e8;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #155ac1;
+      }
+    </style>
+
+    <script>
+      const CORRECT_PASSCODE = "Tkkikaku1212!";
+
+      function checkPasscode() {
+        const input = document.getElementById("passcode").value;
+        if (input === CORRECT_PASSCODE) {
+          localStorage.setItem("authorized", "yes");
+          document.getElementById("login-container").classList.add("hidden");
+          document.getElementById("map").style.display = "block";
+          loadMapScript();
+        } else {
+          alert("パスコードが間違っています。");
         }
-      });
+      }
 
-      locations.forEach(loc => {
-        const iconUrl = colors[loc.sheet] || colors["その他"];
+      function loadMapScript() {
+        const script = document.createElement("script");
+        script.src =
+          "https://script.google.com/macros/s/AKfycbyj9JRN6Wuyzwq92QUeULCcKM9yNwQClzlpnWuYX5MQbwfxbWcUsrzLZik6W9ldgPm5IA/exec?callback=displayMarkers";
+        document.body.appendChild(script);
+      }
 
-        const marker = new google.maps.Marker({
-          position: { lat: loc.lat, lng: loc.lng },
-          map: map,
-          title: loc.name,
-          icon: {
-            url: iconUrl,
-            scaledSize: new google.maps.Size(60, 60),
-          },
+      function displayMarkers(locations) {
+        const map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 26.2124, lng: 127.6809 },
+          zoom: 10,
         });
 
-        const content = `
-          <div class="info-window">
-            <div class="info-title">${loc.name}</div>
-            <div class="info-category">${loc.sheet}</div>
-            <a class="info-link" href="${loc.pdf}" target="_blank">📄 概要書</a>
-            <div class="info-line">💰 価格：<span>${loc.price} 万円</span></div>
-            <div class="info-line">📏 坪単価：<span>${loc.tsubo} 万円</span></div>
-            <div class="info-line">👤 紹介元：<span>${loc.agency}</span></div>
-          </div>
-        `;
-
-        marker.addListener("click", () => {
-          infoWindow.setContent(content);
-          infoWindow.open(map, marker);
+        locations.forEach((loc) => {
+          const marker = new google.maps.Marker({
+            position: { lat: loc.lat, lng: loc.lng },
+            map: map,
+            title: loc.name,
+          });
         });
+      }
 
-        allMarkers.push({ marker, sheet: loc.sheet, city: loc.city });
-      });
-    }
+      window.onload = function () {
+        if (localStorage.getItem("authorized") === "yes") {
+          document.getElementById("login-container").classList.add("hidden");
+          document.getElementById("map").style.display = "block";
+          loadMapScript();
+        }
+      };
+    </script>
+  </head>
+  <body>
+    <div id="login-container">
+      <div id="login-box">
+        <h2>パスコードを入力してください</h2>
+        <input type="password" id="passcode" placeholder="パスコード" />
+        <button onclick="checkPasscode()">ログイン</button>
+      </div>
+    </div>
 
-    function filterMarkers() {
-      const selectedCategory = document.getElementById("filter").value;
-      const selectedCity = document.getElementById("cityFilter").value;
-
-      allMarkers.forEach(({ marker, sheet, city }) => {
-        const matchCategory = selectedCategory === "all" || sheet === selectedCategory;
-        const matchCity = selectedCity === "all" || city === selectedCity;
-        marker.setMap(matchCategory && matchCity ? map : null);
-      });
-    }
-  </script>
-</head>
-<body onload="initMap()">
-  <div class="filter-box" style="padding:10px;background:#f5f5f5">
-    <label for="filter">カテゴリで絞り込み：</label>
-    <select id="filter" onchange="filterMarkers()">
-      <option value="all">すべて表示</option>
-      <option value="土地">土地</option>
-      <option value="戸建て">戸建て</option>
-      <option value="マンション">マンション</option>
-      <option value="収益物件">収益物件</option>
-      <option value="軍用地">軍用地</option>
-      <option value="工場・店舗">工場・店舗</option>
-      <option value="県外・離島">県外・離島</option>
-    </select>
-  </div>
-  <div class="city-filter-box" style="padding:10px;background:#f0f0f0">
-    <label for="cityFilter">市区町村で絞り込み：</label>
-    <select id="cityFilter" onchange="filterMarkers()">
-      <option value="all">すべて表示</option>
-    </select>
-  </div>
-  <div id="map"></div>
-  <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap">
-  </script>
-</body>
+    <div id="map"></div>
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap"
+    ></script>
+  </body>
 </html>
