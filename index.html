@@ -1,209 +1,205 @@
+<!-- 完全対応版 HTMLコード -->
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>物件マップ</title>
-    <link rel="icon" href="./logo_512x512.png" />
-    <link rel="manifest" href="./manifest.json" />
-    <meta name="theme-color" content="#ffffff" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>物件マップ</title>
+  <link rel="icon" href="./logo_512x512.png" />
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#ffffff" />
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+    }
+    #login-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #map, .filter-box {
+      display: none;
+    }
+    #map {
+      height: calc(100vh - 70px);
+      width: 100%;
+    }
+    .info-window {
+      font-size: 12px;
+      line-height: 1.4;
+      max-width: 260px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      word-break: break-word;
+    }
+    .info-window img {
+      width: 100%;
+      max-height: 150px;
+      object-fit: contain;
+      margin-bottom: 6px;
+    }
+    .info-window .info-line {
+      margin: 3px 0;
+    }
+    .info-window .info-line span {
+      font-weight: normal;
+    }
+    select {
+      font-size: 1.4rem;
+      padding: 6px;
+      width: 100%;
+      max-width: 300px;
+    }
+    label {
+      font-size: 1.4rem;
+      display: block;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="login-box">
+    <h2>パスコードを入力してください</h2>
+    <input type="password" id="passcode-input" placeholder="パスコードを入力" />
+    <button onclick="checkPasscode()">ログイン</button>
+    <p id="error-message" style="color: red;"></p>
+  </div>
 
-    <style>
-      body {
-        margin: 0;
-        font-family: sans-serif;
-      }
-      #login-box {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-      }
-      #map, .filter-box {
-        display: none;
-      }
-      #map {
-        height: calc(100vh - 70px);
-        width: 100%;
-      }
-      .info-window {
-        font-size: 12px;
-        line-height: 1.4;
-        max-width: 240px;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-      }
-      .info-window .info-title {
-        font-size: 14px;
-        font-weight: bold;
-        margin-bottom: 2px;
-      }
-      .info-window .info-category {
-        font-size: 11px;
-        color: #666;
-        margin-bottom: 6px;
-      }
-      .info-window .info-link {
-        display: inline-block;
-        margin: 4px 0;
-        color: #1a73e8;
-        text-decoration: none;
-        font-weight: bold;
-        font-size: 12px;
-      }
-      .info-window .info-line {
-        margin: 2px 0;
-        font-size: 12px;
-      }
-      .info-window .info-line span {
-        font-weight: normal;
-      }
-      select {
-        font-size: 1.4rem;
-        padding: 6px;
-        width: 100%;
-        max-width: 300px;
-      }
-      label {
-        font-size: 1.4rem;
-        display: block;
-        margin-bottom: 5px;
-      }
-    </style>
-  </head>
+  <div class="filter-box" style="padding:10px;background:#f5f5f5">
+    <label for="filter">カテゴリで絞り込み：</label>
+    <select id="filter" onchange="filterMarkers()">
+      <option value="all">すべて表示</option>
+      <option value="土地">土地</option>
+      <option value="戸建て">戸建て</option>
+      <option value="マンション">マンション</option>
+      <option value="収益物件">収益物件</option>
+      <option value="軍用地">軍用地</option>
+      <option value="工場・店舗">工場・店舗</option>
+      <option value="県外・離島">県外・離島</option>
+      <option value="名刺">名刺</option>
+    </select>
+  </div>
 
-  <body>
-    <!-- パスコード入力画面 -->
-    <div id="login-box">
-      <h2>パスコードを入力してください</h2>
-      <input type="password" id="passcode-input" placeholder="パスコードを入力" />
-      <button onclick="checkPasscode()">ログイン</button>
-      <p id="error-message" style="color: red;"></p>
-    </div>
+  <div id="map"></div>
 
-    <!-- 地図とフィルター -->
-    <div class="filter-box" style="padding:10px;background:#f5f5f5">
-      <label for="filter">カテゴリで絞り込み：</label>
-      <select id="filter" onchange="filterMarkers()">
-        <option value="all">すべて表示</option>
-        <option value="土地">土地</option>
-        <option value="戸建て">戸建て</option>
-        <option value="マンション">マンション</option>
-        <option value="収益物件">収益物件</option>
-        <option value="軍用地">軍用地</option>
-        <option value="工場・店舗">工場・店舗</option>
-        <option value="県外・離島">県外・離島</option>
-        <option value="名刺">名刺</option>
-      </select>
-    </div>
+  <script>
+    const CORRECT_PASSCODE = "Tkkikaku1212!";
 
-    <div id="map"></div>
+    function checkPasscode() {
+      const input = document.getElementById("passcode-input").value;
+      const error = document.getElementById("error-message");
+      if (input === CORRECT_PASSCODE) {
+        localStorage.setItem("tk_passcode", input);
+        document.getElementById("login-box").style.display = "none";
+        document.getElementById("map").style.display = "block";
+        document.querySelector(".filter-box").style.display = "block";
+        initMap();
+      } else {
+        error.textContent = "パスコードが違います";
+      }
+    }
 
-    <script>
-      const CORRECT_PASSCODE = "Tkkikaku1212!";
+    window.onload = () => {
+      const saved = localStorage.getItem("tk_passcode");
+      if (saved === CORRECT_PASSCODE) {
+        document.getElementById("login-box").style.display = "none";
+        document.getElementById("map").style.display = "block";
+        document.querySelector(".filter-box").style.display = "block";
+        initMap();
+      }
+    };
 
-      // グローバル関数として宣言（onclick用）
-      window.checkPasscode = function () {
-        const input = document.getElementById("passcode-input").value;
-        const error = document.getElementById("error-message");
+    let map;
+    let allMarkers = [];
 
-        if (input === CORRECT_PASSCODE) {
-          localStorage.setItem("tk_passcode", input);
-          document.getElementById("login-box").style.display = "none";
-          document.getElementById("map").style.display = "block";
-          document.querySelector(".filter-box").style.display = "block";
-          initMap();
-        } else {
-          error.textContent = "パスコードが違います";
-        }
+    function initMap() {
+      const script = document.createElement("script");
+      script.src = "https://script.google.com/macros/s/AKfycbyj9JRN6Wuyzwq92QUeULCcKM9yNwQClzlpnWuYX5MQbwfxbWcUsrzLZik6W9ldgPm5IA/exec?callback=displayMarkers";
+      document.body.appendChild(script);
+    }
+
+    function displayMarkers(locations) {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 26.2124, lng: 127.6809 },
+        zoom: 10,
+      });
+
+      const colors = {
+        土地: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+        戸建て: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+        マンション: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+        収益物件: "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+        軍用地: "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
+        "工場・店舗": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
+        "県外・離島": "http://maps.google.com/mapfiles/ms/icons/brown-dot.png",
+        名刺: "http://maps.google.com/mapfiles/ms/icons/ltblue-dot.png",
+        その他: "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
       };
 
-      // 自動ログイン（ローカルストレージ保持）
-      window.onload = () => {
-        const saved = localStorage.getItem("tk_passcode");
-        if (saved === CORRECT_PASSCODE) {
-          document.getElementById("login-box").style.display = "none";
-          document.getElementById("map").style.display = "block";
-          document.querySelector(".filter-box").style.display = "block";
-          initMap();
-        }
-      };
+      const infoWindow = new google.maps.InfoWindow();
+      allMarkers = [];
 
-      let map;
-      let allMarkers = [];
+      locations.forEach((loc) => {
+        const iconUrl = colors[loc.sheet] || colors["その他"];
 
-      function initMap() {
-        const script = document.createElement("script");
-        script.src = "https://script.google.com/macros/s/AKfycbyj9JRN6Wuyzwq92QUeULCcKM9yNwQClzlpnWuYX5MQbwfxbWcUsrzLZik6W9ldgPm5IA/exec?callback=displayMarkers";
-        document.body.appendChild(script);
-      }
-
-      function displayMarkers(locations) {
-        map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 26.2124, lng: 127.6809 },
-          zoom: 10,
+        const marker = new google.maps.Marker({
+          position: { lat: loc.lat, lng: loc.lng },
+          map: map,
+          title: loc.name,
+          icon: {
+            url: iconUrl,
+            scaledSize: new google.maps.Size(60, 60),
+          },
         });
 
-        const colors = {
-          土地: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-          戸建て: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-          マンション: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
-          収益物件: "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
-          軍用地: "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
-          "工場・店舗": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
-          "県外・離島": "http://maps.google.com/mapfiles/ms/icons/brown-dot.png",
-          名刺: "http://maps.google.com/mapfiles/ms/icons/ltblue-dot.png",
-          その他: "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
-        };
-
-        const infoWindow = new google.maps.InfoWindow();
-        allMarkers = [];
-
-        locations.forEach((loc) => {
-          const iconUrl = colors[loc.sheet] || colors["その他"];
-
-          const marker = new google.maps.Marker({
-            position: { lat: loc.lat, lng: loc.lng },
-            map: map,
-            title: loc.name,
-            icon: {
-              url: iconUrl,
-              scaledSize: new google.maps.Size(60, 60),
-            },
-          });
-
-          const content = `
+        let content;
+        if (loc.sheet === "名刺") {
+          content = `
+            <div class="info-window">
+              <img src="${loc.image}" alt="名刺画像" />
+              <div class="info-line">👨‍💼 会社名：<span>${loc.company}</span></div>
+              <div class="info-line">🏢 会社番号：<span>${loc.companyTel}</span></div>
+              <div class="info-line">🧑 担当名：<span>${loc.agent}</span></div>
+              <div class="info-line">📞 <a href="tel:${loc.agentTel}">${loc.agentTel}</a></div>
+              <div class="info-line">📝 備考：<span>${loc.memo}</span></div>
+            </div>
+          `;
+        } else {
+          content = `
             <div class="info-window">
               <div class="info-title">${loc.name}</div>
               <div class="info-category">${loc.sheet}</div>
               <a class="info-link" href="${loc.pdf}" target="_blank">📄 概要書</a>
-              <div class="info-line">💰 価格：<span>${loc.price || ""} 万円</span></div>
-              <div class="info-line">📏 坪単価：<span>${loc.tsubo || ""} 万円</span></div>
-              <div class="info-line">👤 紹介元：<span>${loc.agency || ""}</span></div>
+              <div class="info-line">💰 価格：<span>${loc.price} 万円</span></div>
+              <div class="info-line">📏 坪単価：<span>${loc.tsubo} 万円</span></div>
+              <div class="info-line">👤 紹介元：<span>${loc.agency}</span></div>
             </div>
           `;
+        }
 
-          marker.addListener("click", () => {
-            infoWindow.setContent(content);
-            infoWindow.open(map, marker);
-          });
-
-          allMarkers.push({ marker, sheet: loc.sheet });
+        marker.addListener("click", () => {
+          infoWindow.setContent(content);
+          infoWindow.open(map, marker);
         });
-      }
 
-      function filterMarkers() {
-        const selected = document.getElementById("filter").value;
-        allMarkers.forEach(({ marker, sheet }) => {
-          marker.setMap(selected === "all" || sheet === selected ? map : null);
-        });
-      }
-    </script>
+        allMarkers.push({ marker, sheet: loc.sheet });
+      });
+    }
 
-    <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap">
-    </script>
-  </body>
+    function filterMarkers() {
+      const selected = document.getElementById("filter").value;
+      allMarkers.forEach(({ marker, sheet }) => {
+        marker.setMap(selected === "all" || sheet === selected ? map : null);
+      });
+    }
+  </script>
+
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap">
+  </script>
+</body>
 </html>
