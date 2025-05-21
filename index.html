@@ -1,55 +1,203 @@
-function doGet(e) {
-  const callback = e.parameter.callback;
-  const data = getMapData();
-  const json = JSON.stringify(data);
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>物件マップ</title>
 
-  if (callback) {
-    return ContentService
-      .createTextOutput(`${callback}(${json})`)
-      .setMimeType(ContentService.MimeType.JAVASCRIPT);
-  } else {
-    return ContentService
-      .createTextOutput(json)
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
+    <link rel="apple-touch-icon" sizes="180x180" href="./logo_512x512.png" />
+    <link rel="icon" href="./logo_512x512.png" />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="manifest" href="./manifest.json" />
 
-function getMapData() {
-  const ss = SpreadsheetApp.openById('1HBt9l7Z4Q4PekvNUrPd8tUopRy0JFO27epT-tgsxqU0');
-  const sheets = ss.getSheets();
-  const result = [];
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+      }
 
-  for (const sheet of sheets) {
-    const values = sheet.getDataRange().getValues();
-    const sheetName = sheet.getName();
+      #map {
+        height: calc(100vh - 120px);
+        width: 100%;
+      }
 
-    for (let i = 1; i < values.length; i++) {
-      const row = values[i];
+      .info-window {
+        font-size: 13px;
+        line-height: 1.4;
+        max-width: 250px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        word-wrap: break-word;
+      }
 
-      const name = row[0];
-      const lat = parseFloat(row[1]);
-      const lng = parseFloat(row[2]);
-      const pdf = row[3];
-      const price = row[4];
-      const tsubo = row[5];
-      const agency = row[6];
-      const city = row[7]; // ✅ H列（市町村）を読み取る
+      .info-window .info-title {
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 4px;
+      }
 
-      if (name && !isNaN(lat) && !isNaN(lng)) {
-        result.push({
-          name: name,
-          lat: lat,
-          lng: lng,
-          pdf: pdf || '',
-          sheet: sheetName,
-          price: price || '',
-          tsubo: tsubo || '',
-          agency: agency || '',
-          city: city || '' // ✅ ここで city を追加
+      .info-window .info-category {
+        font-size: 11px;
+        color: #666;
+        margin-bottom: 4px;
+      }
+
+      .info-window .info-link {
+        display: inline-block;
+        margin: 4px 0;
+        color: #1a73e8;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 12px;
+      }
+
+      .info-window .info-line {
+        margin: 2px 0;
+        font-size: 12px;
+      }
+
+      .info-window .info-line span {
+        font-weight: normal;
+      }
+
+      .filter-box {
+        padding: 8px;
+        background: #f5f5f5;
+      }
+
+      label {
+        font-size: 1.3rem;
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      select {
+        font-size: 1.3rem;
+        padding: 4px;
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: 10px;
+      }
+    </style>
+
+    <script>
+      let map;
+      let allMarkers = [];
+      let selectedCity = "all";
+      let infoWindow;
+
+      function initMap() {
+        const script = document.createElement("script");
+        script.src =
+          "https://script.google.com/macros/s/AKfycbyj9JRN6Wuyzwq92QUeULCcKM9yNwQClzlpnWuYX5MQbwfxbWcUsrzLZik6W9ldgPm5IA/exec?callback=displayMarkers";
+        document.body.appendChild(script);
+      }
+
+      function displayMarkers(locations) {
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 26.2124, lng: 127.6809 },
+          zoom: 10,
+        });
+
+        const colors = {
+          土地: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+          戸建て: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+          マンション: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+          収益物件: "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+          軍用地: "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
+          "工場・店舗": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
+          "県外・離島": "http://maps.google.com/mapfiles/ms/icons/brown-dot.png",
+          その他: "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+        };
+
+        const citySet = new Set();
+        allMarkers = [];
+        infoWindow = new google.maps.InfoWindow();
+
+        locations.forEach((loc) => {
+          if (loc.city) citySet.add(loc.city);
+
+          const iconUrl = colors[loc.sheet] || colors["その他"];
+
+          const marker = new google.maps.Marker({
+            position: { lat: loc.lat, lng: loc.lng },
+            map: map,
+            title: loc.name,
+            icon: {
+              url: iconUrl,
+              scaledSize: new google.maps.Size(60, 60),
+            },
+          });
+
+          const content = `
+            <div class="info-window">
+              <div class="info-title">${loc.name}</div>
+              <div class="info-category">${loc.sheet}</div>
+              <a class="info-link" href="${loc.pdf}" target="_blank">📄 概要書</a>
+              <div class="info-line">💰 価格：<span>${loc.price} 万円</span></div>
+              <div class="info-line">📏 坪単価：<span>${loc.tsubo} 万円</span></div>
+              <div class="info-line">👤 紹介元：<span>${loc.agency}</span></div>
+            </div>
+          `;
+
+          marker.addListener("click", () => {
+            infoWindow.setContent(content);
+            infoWindow.open(map, marker);
+          });
+
+          allMarkers.push({ marker, sheet: loc.sheet, city: loc.city });
+        });
+
+        // 市町村フィルターの生成
+        const citySelect = document.getElementById("cityFilter");
+        [...citySet].sort().forEach((city) => {
+          const option = document.createElement("option");
+          option.value = city;
+          option.textContent = city;
+          citySelect.appendChild(option);
         });
       }
-    }
-  }
 
-  return result;
-}
+      function filterMarkers() {
+        const selectedCategory = document.getElementById("filter").value;
+        selectedCity = document.getElementById("cityFilter").value;
+
+        allMarkers.forEach(({ marker, sheet, city }) => {
+          const matchCategory = selectedCategory === "all" || sheet === selectedCategory;
+          const matchCity = selectedCity === "all" || city === selectedCity;
+
+          marker.setMap(matchCategory && matchCity ? map : null);
+        });
+      }
+    </script>
+  </head>
+
+  <body onload="initMap()">
+    <div class="filter-box">
+      <label for="filter">カテゴリで絞り込み：</label>
+      <select id="filter" onchange="filterMarkers()">
+        <option value="all">すべて表示</option>
+        <option value="土地">土地</option>
+        <option value="戸建て">戸建て</option>
+        <option value="マンション">マンション</option>
+        <option value="収益物件">収益物件</option>
+        <option value="軍用地">軍用地</option>
+        <option value="工場・店舗">工場・店舗</option>
+        <option value="県外・離島">県外・離島</option>
+      </select>
+
+      <label for="cityFilter">市区町村で絞り込み：</label>
+      <select id="cityFilter" onchange="filterMarkers()">
+        <option value="all">すべて表示</option>
+      </select>
+    </div>
+
+    <div id="map"></div>
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap"
+    ></script>
+  </body>
+</html>
