@@ -15,34 +15,29 @@
         margin: 0;
         font-family: sans-serif;
       }
-
       #map {
-        height: calc(100vh - 120px);
+        height: calc(100vh - 140px);
         width: 100%;
       }
-
       .info-window {
-        font-size: 13px;
+        font-size: 12px;
         line-height: 1.4;
-        max-width: 250px;
+        max-width: 240px;
         padding: 8px;
         border: 1px solid #ccc;
         border-radius: 8px;
         word-wrap: break-word;
       }
-
       .info-window .info-title {
         font-size: 14px;
         font-weight: bold;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
       }
-
       .info-window .info-category {
         font-size: 11px;
         color: #666;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
       }
-
       .info-window .info-link {
         display: inline-block;
         margin: 4px 0;
@@ -51,33 +46,23 @@
         font-weight: bold;
         font-size: 12px;
       }
-
       .info-window .info-line {
+        white-space: nowrap;
         margin: 2px 0;
-        font-size: 12px;
       }
-
       .info-window .info-line span {
         font-weight: normal;
       }
-
-      .filter-box {
-        padding: 8px;
-        background: #f5f5f5;
-      }
-
-      label {
-        font-size: 1.3rem;
-        display: block;
-        margin-bottom: 4px;
-      }
-
       select {
-        font-size: 1.3rem;
-        padding: 4px;
+        font-size: 1.4rem;
+        padding: 6px;
         width: 100%;
         max-width: 300px;
-        margin-bottom: 10px;
+      }
+      label {
+        font-size: 1.4rem;
+        display: block;
+        margin-bottom: 5px;
       }
     </style>
 
@@ -85,7 +70,6 @@
       let map;
       let allMarkers = [];
       let selectedCity = "all";
-      let infoWindow;
 
       function initMap() {
         const script = document.createElement("script");
@@ -101,23 +85,22 @@
         });
 
         const colors = {
-          土地: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-          戸建て: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-          マンション: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
-          収益物件: "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
-          軍用地: "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
+          "土地": "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+          "戸建て": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+          "マンション": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+          "収益物件": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+          "軍用地": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
           "工場・店舗": "http://maps.google.com/mapfiles/ms/icons/pink-dot.png",
           "県外・離島": "http://maps.google.com/mapfiles/ms/icons/brown-dot.png",
-          その他: "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+          "その他": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"
         };
 
-        const citySet = new Set();
         allMarkers = [];
-        infoWindow = new google.maps.InfoWindow();
+        const infoWindow = new google.maps.InfoWindow();
+
+        const citySet = new Set();
 
         locations.forEach((loc) => {
-          if (loc.city) citySet.add(loc.city);
-
           const iconUrl = colors[loc.sheet] || colors["その他"];
 
           const marker = new google.maps.Marker({
@@ -146,11 +129,15 @@
             infoWindow.open(map, marker);
           });
 
+          if (loc.city) {
+            citySet.add(loc.city);
+          }
+
           allMarkers.push({ marker, sheet: loc.sheet, city: loc.city });
         });
 
-        // 市町村フィルターの生成
         const citySelect = document.getElementById("cityFilter");
+        citySelect.innerHTML = '<option value="all">すべて表示</option>';
         [...citySet].sort().forEach((city) => {
           const option = document.createElement("option");
           option.value = city;
@@ -172,9 +159,8 @@
       }
     </script>
   </head>
-
   <body onload="initMap()">
-    <div class="filter-box">
+    <div class="filter-box" style="padding:10px;background:#f5f5f5">
       <label for="filter">カテゴリで絞り込み：</label>
       <select id="filter" onchange="filterMarkers()">
         <option value="all">すべて表示</option>
@@ -186,18 +172,16 @@
         <option value="工場・店舗">工場・店舗</option>
         <option value="県外・離島">県外・離島</option>
       </select>
-
+    </div>
+    <div class="city-filter-box" style="padding:10px;background:#f0f0f0">
       <label for="cityFilter">市区町村で絞り込み：</label>
       <select id="cityFilter" onchange="filterMarkers()">
         <option value="all">すべて表示</option>
       </select>
     </div>
-
     <div id="map"></div>
-    <script
-      async
-      defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap"
-    ></script>
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap">
+    </script>
   </body>
 </html>
