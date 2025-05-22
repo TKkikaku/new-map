@@ -84,7 +84,7 @@
     <div class="filter-box" style="padding:10px;background:#f5f5f5">
       <label for="filter">カテゴリで絞り込み：</label>
       <select id="filter" onchange="filterMarkers()">
-        <option value="all">すべて表示</option>
+        <option value="">選択</option>
         <option value="土地">土地</option>
         <option value="戸建て">戸建て</option>
         <option value="マンション">マンション</option>
@@ -99,7 +99,7 @@
     <div class="city-filter-box" style="padding:10px;background:#f0f0f0">
       <label for="cityFilter">市区町村で絞り込み：</label>
       <select id="cityFilter" onchange="filterMarkers()">
-        <option value="all">すべて表示</option>
+        <option value="">選択</option>
       </select>
     </div>
 
@@ -243,7 +243,7 @@
         const selectedCity = document.getElementById("cityFilter").value;
         allMarkers.forEach(({ marker, sheet, city }) => {
           const matchCategory = selectedCategory === "all" || sheet === selectedCategory;
-          const matchCity = selectedCity === "all" || city === selectedCity;
+          const matchCity = !selectedCity || city === selectedCity;
           marker.setMap(matchCategory && matchCity ? map : null);
         });
       }
