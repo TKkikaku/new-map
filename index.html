@@ -227,7 +227,7 @@
 
   // 市区町村のプルダウン生成
   const citySelect = document.getElementById("cityFilter");
-  citySelect.innerHTML = '<option value="all">すべて表示</option>';
+  citySelect.innerHTML = '<option value="all">選択</option>';
   cityOrder.forEach(city => {
     if (citySet.has(city)) {
       const option = document.createElement("option");
