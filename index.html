@@ -94,6 +94,11 @@
         <option value="県外・離島">県外・離島</option>
         <option value="名刺">名刺</option>
       </select>
+      <!-- 市区町村 -->
+<select id="cityFilter" onchange="filterMarkers()">
+  <option value="">選択</option>
+  <!-- 都市名は動的に追加されるはず -->
+</select>
     </div>
 
     <div class="city-filter-box" style="padding:10px;background:#f0f0f0">
@@ -242,8 +247,14 @@
         const selectedCategory = document.getElementById("filter").value;
         const selectedCity = document.getElementById("cityFilter").value;
         allMarkers.forEach(({ marker, sheet, city }) => {
+           // カテゴリが未選択なら全て非表示
+    if (!selectedCategory) {
+      marker.setMap(null);
+      return;
+    }
           const matchCategory = selectedCategory && sheet === selectedCategory;
           const matchCity = !selectedCity || city === selectedCity;
+            // カテゴリが一致し、かつ市区町村が未選択 または 一致している
           marker.setMap(matchCategory && matchCity ? map : null);
         });
       }
