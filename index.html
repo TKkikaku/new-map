@@ -1,265 +1,182 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>物件マップ</title>
-    <link rel="icon" href="./logo_512x512.png" />
-    <link rel="manifest" href="./manifest.json" />
-    <meta name="theme-color" content="#ffffff" />
-    <style>
-      body {
-        margin: 0;
-        font-family: sans-serif;
-      }
-      #login-box {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-      }
-      #map, .filter-box, .city-filter-box {
-        display: none;
-      }
-      #map {
-        height: calc(100vh - 140px);
-        width: 100%;
-      }
-      .info-window {
-        font-size: 12px;
-        line-height: 1.4;
-        max-width: 240px;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-      }
-      .info-window .info-title {
-        font-size: 14px;
-        font-weight: bold;
-        margin-bottom: 2px;
-      }
-      .info-window .info-category {
-        font-size: 11px;
-        color: #666;
-        margin-bottom: 6px;
-      }
-      .info-window .info-link {
-        display: inline-block;
-        margin: 4px 0;
-        color: #1a73e8;
-        text-decoration: none;
-        font-weight: bold;
-        font-size: 12px;
-      }
-      .info-window .info-line {
-        margin: 2px 0;
-        font-size: 12px;
-      }
-      .info-window .info-line span {
-        font-weight: normal;
-      }
-      select {
-        font-size: 1.4rem;
-        padding: 6px;
-        width: 100%;
-        max-width: 300px;
-      }
-      label {
-        font-size: 1.4rem;
-        display: block;
-        margin-bottom: 5px;
-      }
-    </style>
+    <meta charset="UTF-8" /> <!-- 1 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- 2 -->
+    <title>物件マップ</title> <!-- 3 -->
+    <link rel="icon" href="./logo_512x512.png" /> <!-- 4 -->
+    <link rel="manifest" href="./manifest.json" /> <!-- 5 -->
+    <meta name="theme-color" content="#ffffff" /> <!-- 6 -->
+    <style> <!-- 7 -->
+      body { margin: 0; font-family: sans-serif; } <!-- 8 -->
+      #login-box { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; } <!-- 9 -->
+      #map, .filter-box, .city-filter-box { display: none; } <!-- 10 -->
+      #map { height: calc(100vh - 140px); width: 100%; } <!-- 11 -->
+      .info-window { font-size: 12px; line-height: 1.4; max-width: 240px; padding: 8px; border: 1px solid #ccc; border-radius: 8px; } <!-- 12 -->
+      .info-window .info-title { font-size: 14px; font-weight: bold; margin-bottom: 2px; } <!-- 13 -->
+      .info-window .info-category { font-size: 11px; color: #666; margin-bottom: 6px; } <!-- 14 -->
+      .info-window .info-link { display: inline-block; margin: 4px 0; color: #1a73e8; text-decoration: none; font-weight: bold; font-size: 12px; } <!-- 15 -->
+      .info-window .info-line { margin: 2px 0; font-size: 12px; } <!-- 16 -->
+      .info-window .info-line span { font-weight: normal; } <!-- 17 -->
+      select { font-size: 1.4rem; padding: 6px; width: 100%; max-width: 300px; } <!-- 18 -->
+      label { font-size: 1.4rem; display: block; margin-bottom: 5px; } <!-- 19 -->
+    </style> <!-- 20 -->
   </head>
 
-  <body>
-    <div id="login-box">
-      <h2>パスコードを入力してください</h2>
-      <input type="password" id="passcode-input" placeholder="パスコードを入力" />
-      <button onclick="checkPasscode()">ログイン</button>
-      <p id="error-message" style="color: red;"></p>
-    </div>
+  <body> <!-- 21 -->
+    <div id="login-box"> <!-- 22 -->
+      <h2>パスコードを入力してください</h2> <!-- 23 -->
+      <input type="password" id="passcode-input" placeholder="パスコードを入力" /> <!-- 24 -->
+      <button onclick="checkPasscode()">ログイン</button> <!-- 25 -->
+      <p id="error-message" style="color: red;"></p> <!-- 26 -->
+    </div> <!-- 27 -->
 
-    <div class="filter-box" style="padding:10px;background:#f5f5f5">
-      <label for="filter">カテゴリで絞り込み：</label>
-      <select id="filter" onchange="filterMarkers()">
-        <option value="">選択</option>
-        <option value="土地">土地</option>
-        <option value="戸建て">戸建て</option>
-        <option value="マンション">マンション</option>
-        <option value="収益物件">収益物件</option>
-        <option value="軍用地">軍用地</option>
-        <option value="工場・店舗">工場・店舗</option>
-        <option value="県外・離島">県外・離島</option>
-        <option value="名刺">名刺</option>
-      </select>
-      <!-- 市区町村 -->
+    <div class="filter-box" style="padding:10px;background:#f5f5f5"> <!-- 28 -->
+      <label for="filter">カテゴリで絞り込み：</label> <!-- 29 -->
+      <select id="filter" onchange="filterMarkers()"> <!-- 30 -->
+        <option value="">選択</option> <!-- 31 -->
+        <option value="土地">土地</option> <!-- 32 -->
+        <option value="戸建て">戸建て</option> <!-- 33 -->
+        <option value="マンション">マンション</option> <!-- 34 -->
+        <option value="収益物件">収益物件</option> <!-- 35 -->
+        <option value="軍用地">軍用地</option> <!-- 36 -->
+        <option value="工場・店舗">工場・店舗</option> <!-- 37 -->
+        <option value="県外・離島">県外・離島</option> <!-- 38 -->
+        <option value="名刺">名刺</option> <!-- 39 -->
+      </select> <!-- 40 -->
+    </div> <!-- 41 -->
 
-  <option value="">選択</option>
-  <!-- 都市名は動的に追加されるはず -->
-</select>
-    </div>
+    <div class="city-filter-box" style="padding:10px;background:#f0f0f0"> <!-- 42 -->
+      <label for="cityFilter">市区町村で絞り込み：</label> <!-- 43 -->
+      <select id="cityFilter" onchange="filterMarkers()"> <!-- 44 -->
+        <option value="">選択</option> <!-- 45 -->
+      </select> <!-- 46 -->
+    </div> <!-- 47 -->
 
-    <div class="city-filter-box" style="padding:10px;background:#f0f0f0">
-      <label for="cityFilter">市区町村で絞り込み：</label>
-      <select id="cityFilter" onchange="filterMarkers()">
-       
-    </div>
+    <div id="map"></div> <!-- 48 -->
 
-    <div id="map"></div>
+    <script> <!-- 49 -->
+      const CORRECT_PASSCODE = "Tkkikaku1212!"; <!-- 50 -->
 
-    <script>
-      const CORRECT_PASSCODE = "Tkkikaku1212!";
+      function checkPasscode() { <!-- 51 -->
+        const input = document.getElementById("passcode-input").value; <!-- 52 -->
+        const error = document.getElementById("error-message"); <!-- 53 -->
+        if (input === CORRECT_PASSCODE) { <!-- 54 -->
+          localStorage.setItem("tk_passcode", input); <!-- 55 -->
+          document.getElementById("login-box").style.display = "none"; <!-- 56 -->
+          document.getElementById("map").style.display = "block"; <!-- 57 -->
+          document.querySelector(".filter-box").style.display = "block"; <!-- 58 -->
+          document.querySelector(".city-filter-box").style.display = "block"; <!-- 59 -->
+          initMap(); <!-- 60 -->
+        } else { <!-- 61 -->
+          error.textContent = "パスコードが違います"; <!-- 62 -->
+        } <!-- 63 -->
+      } <!-- 64 -->
 
-      function checkPasscode() {
-        const input = document.getElementById("passcode-input").value;
-        const error = document.getElementById("error-message");
-        if (input === CORRECT_PASSCODE) {
-          localStorage.setItem("tk_passcode", input);
-          document.getElementById("login-box").style.display = "none";
-          document.getElementById("map").style.display = "block";
-          document.querySelector(".filter-box").style.display = "block";
-          document.querySelector(".city-filter-box").style.display = "block";
-          initMap();
-        } else {
-          error.textContent = "パスコードが違います";
-        }
-      }
+      window.onload = () => { <!-- 65 -->
+        const saved = localStorage.getItem("tk_passcode"); <!-- 66 -->
+        if (saved === CORRECT_PASSCODE) { <!-- 67 -->
+          document.getElementById("login-box").style.display = "none"; <!-- 68 -->
+          document.getElementById("map").style.display = "block"; <!-- 69 -->
+          document.querySelector(".filter-box").style.display = "block"; <!-- 70 -->
+          document.querySelector(".city-filter-box").style.display = "block"; <!-- 71 -->
+          initMap(); <!-- 72 -->
+        } <!-- 73 -->
+      }; <!-- 74 -->
 
-      window.onload = () => {
-        const saved = localStorage.getItem("tk_passcode");
-        if (saved === CORRECT_PASSCODE) {
-          document.getElementById("login-box").style.display = "none";
-          document.getElementById("map").style.display = "block";
-          document.querySelector(".filter-box").style.display = "block";
-          document.querySelector(".city-filter-box").style.display = "block";
-          initMap();
-        }
-      };
+      let map; <!-- 75 -->
+      let allMarkers = []; <!-- 76 -->
 
-      let map;
-      let allMarkers = [];
+      function initMap() { <!-- 77 -->
+        const script = document.createElement("script"); <!-- 78 -->
+        script.src = "https://script.google.com/macros/s/AKfycbyj9JRN6Wuyzwq92QUeULCcKM9yNwQClzlpnWuYX5MQbwfxbWcUsrzLZik6W9ldgPm5IA/exec?callback=displayMarkers"; <!-- 79 -->
+        document.body.appendChild(script); <!-- 80 -->
+      } <!-- 81 -->
 
-      function initMap() {
-        const script = document.createElement("script");
-        script.src = "https://script.google.com/macros/s/AKfycbyj9JRN6Wuyzwq92QUeULCcKM9yNwQClzlpnWuYX5MQbwfxbWcUsrzLZik6W9ldgPm5IA/exec?callback=displayMarkers";
-        document.body.appendChild(script);
-      }
+      function displayMarkers(locations) { <!-- 82 -->
+        map = new google.maps.Map(document.getElementById("map"), { <!-- 83 -->
+          center: { lat: 26.2124, lng: 127.6809 }, <!-- 84 -->
+          zoom: 10, <!-- 85 -->
+        }); <!-- 86 -->
 
-      function displayMarkers(locations) {
-  map = new google.maps.Map(document.getElementById("map"), {
-    center: { lat: 26.2124, lng: 127.6809 },
-    zoom: 10,
-  });
+        const cityOrder = ["名護市", "恩納村", "金武町", "宜野座村", "本部町", "今帰仁村", "大宜味村", "国頭村", "東村", "沖縄市", "うるま市", "浦添市", "宜野湾市", "読谷村", "嘉手納町", "北谷町", "中城村", "西原町", "那覇市", "豊見城市", "糸満市", "南風原町", "与那原町", "八重瀬町", "石垣市", "宮古島市", "その他"]; <!-- 87 -->
 
-  const cityOrder = [
-    "名護市","恩納村","金武町","宜野座村","本部町","今帰仁村","大宜味村","国頭村","東村",
-    "沖縄市","うるま市","浦添市","宜野湾市","読谷村","嘉手納町","北谷町","中城村","西原町",
-    "那覇市","豊見城市","糸満市","南風原町","与那原町","八重瀬町",
-    "石垣市","宮古島市","その他"
-  ];
+        const citySet = new Set(); <!-- 88 -->
+        const infoWindow = new google.maps.InfoWindow(); <!-- 89 -->
+        allMarkers = []; <!-- 90 -->
 
-  const citySet = new Set();
-  const infoWindow = new google.maps.InfoWindow();
-  allMarkers = [];
+        locations.forEach(loc => { <!-- 91 -->
+          const iconUrl = "http://maps.google.com/mapfiles/ms/icons/" + <!-- 92 -->
+            (loc.sheet === "名刺" ? "orange" : loc.sheet === "土地" ? "red" : loc.sheet === "戸建て" ? "blue" : loc.sheet === "マンション" ? "green" : loc.sheet === "収益物件" ? "yellow" : loc.sheet === "軍用地" ? "purple" : loc.sheet === "工場・店舗" ? "pink" : loc.sheet === "県外・離島" ? "brown" : "orange") + "-dot.png"; <!-- 93 -->
 
-  locations.forEach(loc => {
-    const iconUrl = "http://maps.google.com/mapfiles/ms/icons/" +
-      (loc.sheet === "名刺" ? "orange" :
-       loc.sheet === "土地" ? "red" :
-       loc.sheet === "戸建て" ? "blue" :
-       loc.sheet === "マンション" ? "green" :
-       loc.sheet === "収益物件" ? "yellow" :
-       loc.sheet === "軍用地" ? "purple" :
-       loc.sheet === "工場・店舗" ? "pink" :
-       loc.sheet === "県外・離島" ? "brown" : "orange") + "-dot.png";
+          const marker = new google.maps.Marker({ <!-- 94 -->
+            position: { lat: loc.lat, lng: loc.lng }, <!-- 95 -->
+            map: null, <!-- 96 -->
+            title: loc.name, <!-- 97 -->
+            icon: { url: iconUrl, scaledSize: new google.maps.Size(60, 60) } <!-- 98 -->
+          }); <!-- 99 -->
 
-    const marker = new google.maps.Marker({
-      position: { lat: loc.lat, lng: loc.lng },
-      map: null,
-      title: loc.name,
-      icon: {
-        url: iconUrl,
-        scaledSize: new google.maps.Size(60, 60)
-      }
-    });
+          let content = ""; <!-- 100 -->
 
-    let content = "";
+          if (loc.sheet === "名刺") { <!-- 101 -->
+            content = `<div class="info-window"> <!-- 102 -->
+              <div class="info-title">${loc.name || ""}</div> <!-- 103 -->
+              <div class="info-line">👨‍💼 会社名：<span>${loc.name || ""}</span></div> <!-- 104 -->
+              <div class="info-line">🏢 会社番号：<span>${loc.companyNumber || ""}</span></div> <!-- 105 -->
+              <div class="info-line">🧑 担当名：<span>${loc.person || ""}</span></div> <!-- 106 -->
+              <div class="info-line">📛 フリガナ：<span>${loc.furigana || ""}</span></div> <!-- 107 -->
+              <div class="info-line">📞 担当番号：<a href="tel:${loc.phone}">${loc.phone}</a></div> <!-- 108 -->
+              <div class="info-line">📝 備考：<span>${loc.note || ""}</span></div> <!-- 109 -->
+              <a class="info-link" href="${loc.image}" target="_blank">📄 名刺PDFを開く</a> <!-- 110 -->
+            </div>`; <!-- 111 -->
+          } else { <!-- 112 -->
+            content = `<div class="info-window"> <!-- 113 -->
+              <div class="info-title">${loc.name}</div> <!-- 114 -->
+              <div class="info-category">${loc.sheet}</div> <!-- 115 -->
+              <a class="info-link" href="${loc.pdf}" target="_blank">📄 概要書</a> <!-- 116 -->
+              <div class="info-line">💰 価格：<span>${loc.price} 万円</span></div> <!-- 117 -->
+              <div class="info-line">📏 坪単価：<span>${loc.tsubo} 万円</span></div> <!-- 118 -->
+              <div class="info-line">👤 紹介元：<span>${loc.agency}</span></div> <!-- 119 -->
+              <div class="info-line">📝 備考：<span>${loc.note || ""}</span></div> <!-- 120 -->
+            </div>`; <!-- 121 -->
+            if (loc.city) citySet.add(loc.city); <!-- 122 -->
+          } <!-- 123 -->
 
-    if (loc.sheet === "名刺") {
-  content = `
-    <div class="info-window">
-      <div class="info-title">${loc.name || ""}</div>
-      <div class="info-line">👨‍💼 会社名：<span>${loc.name || ""}</span></div>
-      <div class="info-line">🏢 会社番号：<span>${loc.companyNumber || ""}</span></div>
-      <div class="info-line">🧑 担当名：<span>${loc.person || ""}</span></div>
-      <div class="info-line">📛 フリガナ：<span>${loc.furigana || ""}</span></div>
-      <div class="info-line">📞 担当番号：<a href="tel:${loc.phone}">${loc.phone}</a></div>
-      <div class="info-line">📝 備考：<span>${loc.note || ""}</span></div>
-      <a class="info-link" href="${loc.image}" target="_blank">📄 名刺PDFを開く</a>
-    </div>
-  `;
-}
- else {
-      content = `
-        <div class="info-window">
-          <div class="info-title">${loc.name}</div>
-          <div class="info-category">${loc.sheet}</div>
-          <a class="info-link" href="${loc.pdf}" target="_blank">📄 概要書</a>
-          <div class="info-line">💰 価格：<span>${loc.price} 万円</span></div>
-          <div class="info-line">📏 坪単価：<span>${loc.tsubo} 万円</span></div>
-          <div class="info-line">👤 紹介元：<span>${loc.agency}</span></div>
-        <div class="info-line">📝 備考：<span>${loc.note || ""}</span></div>
- </div>
-      `;
-      if (loc.city) citySet.add(loc.city);
-    }
+          marker.addListener("click", () => { <!-- 124 -->
+            infoWindow.setContent(content); <!-- 125 -->
+            infoWindow.open(map, marker); <!-- 126 -->
+          }); <!-- 127 -->
 
-    marker.addListener("click", () => {
-      infoWindow.setContent(content);
-      infoWindow.open(map, marker);
-    });
+          allMarkers.push({ marker, sheet: loc.sheet, city: loc.city || "" }); <!-- 128 -->
+        }); <!-- 129 -->
 
-    allMarkers.push({
-      marker,
-      sheet: loc.sheet,
-      city: loc.city || ""
-    });
-  });
+        const citySelect = document.getElementById("cityFilter"); <!-- 130 -->
+        citySelect.innerHTML = '<option value="">選択</option>'; <!-- 131 -->
+        cityOrder.forEach(city => { <!-- 132 -->
+          if (citySet.has(city)) { <!-- 133 -->
+            const option = document.createElement("option"); <!-- 134 -->
+            option.value = city; <!-- 135 -->
+            option.textContent = city; <!-- 136 -->
+            citySelect.appendChild(option); <!-- 137 -->
+          } <!-- 138 -->
+        }); <!-- 139 -->
+      } <!-- 140 -->
 
-  // 市区町村のプルダウン生成
-  const citySelect = document.getElementById("cityFilter");
-  citySelect.innerHTML = '<option value="">選択</option>';
-  cityOrder.forEach(city => {
-    if (citySet.has(city)) {
-      const option = document.createElement("option");
-      option.value = city;
-      option.textContent = city;
-      citySelect.appendChild(option);
-    }
-  });
-}
+      function filterMarkers() { <!-- 141 -->
+        const selectedCategory = document.getElementById("filter").value; <!-- 142 -->
+        const selectedCity = document.getElementById("cityFilter").value; <!-- 143 -->
 
-      function filterMarkers() {
-        const selectedCategory = document.getElementById("filter").value;
-        const selectedCity = document.getElementById("cityFilter").value;
-        allMarkers.forEach(({ marker, sheet, city }) => {
-           // カテゴリが未選択なら全て非表示
-    if (!selectedCategory) {
-      marker.setMap(null);
-      return;
-    }
-          const matchCategory = selectedCategory && sheet === selectedCategory;
-          const matchCity = !selectedCity || city === selectedCity;
-            // カテゴリが一致し、かつ市区町村が未選択 または 一致している
-          marker.setMap(matchCategory && matchCity ? map : null);
-        });
-      }
+        allMarkers.forEach(({ marker, sheet, city }) => { <!-- 144 -->
+          if (!selectedCategory) { marker.setMap(null); return; } <!-- 145 -->
+          const matchCategory = selectedCategory && sheet === selectedCategory; <!-- 146 -->
+          const matchCity = !selectedCity || city === selectedCity; <!-- 147 -->
+          marker.setMap(matchCategory && matchCity ? map : null); <!-- 148 -->
+        }); <!-- 149 -->
+      } <!-- 150 -->
     </script>
 
-    <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap">
-    </script>
+    <script async defer <!-- 151 -->
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap"> <!-- 152 -->
+    </script> <!-- 153 -->
   </body>
 </html>
