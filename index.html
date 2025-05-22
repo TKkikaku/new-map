@@ -95,7 +95,7 @@
         <option value="名刺">名刺</option>
       </select>
       <!-- 市区町村 -->
-<select id="cityFilter" onchange="filterMarkers()">
+
   <option value="">選択</option>
   <!-- 都市名は動的に追加されるはず -->
 </select>
@@ -104,8 +104,7 @@
     <div class="city-filter-box" style="padding:10px;background:#f0f0f0">
       <label for="cityFilter">市区町村で絞り込み：</label>
       <select id="cityFilter" onchange="filterMarkers()">
-        <option value="">選択</option>
-      </select>
+       
     </div>
 
     <div id="map"></div>
@@ -211,8 +210,7 @@
           <div class="info-line">💰 価格：<span>${loc.price} 万円</span></div>
           <div class="info-line">📏 坪単価：<span>${loc.tsubo} 万円</span></div>
           <div class="info-line">👤 紹介元：<span>${loc.agency}</span></div>
-        </div>
-        <div class="info-line">📝 備考：<span>${loc.memo || ""}</span></div>
+        <div class="info-line">📝 備考：<span>${loc.note || ""}</span></div>
  </div>
       `;
       if (loc.city) citySet.add(loc.city);
@@ -232,7 +230,7 @@
 
   // 市区町村のプルダウン生成
   const citySelect = document.getElementById("cityFilter");
-  citySelect.innerHTML = '<option value="all">選択</option>';
+  citySelect.innerHTML = '<option value="">選択</option>';
   cityOrder.forEach(city => {
     if (citySet.has(city)) {
       const option = document.createElement("option");
