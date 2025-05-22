@@ -186,13 +186,14 @@
     if (loc.sheet === "名刺") {
   content = `
     <div class="info-window">
-      <div class="info-title">📷<br><img src="${loc.image}" style="width:100%;max-width:200px;"></div>
+      <div class="info-title">${loc.name || ""}</div>
       <div class="info-line">👨‍💼 会社名：<span>${loc.name || ""}</span></div>
       <div class="info-line">🏢 会社番号：<span>${loc.companyNumber || ""}</span></div>
       <div class="info-line">🧑 担当名：<span>${loc.person || ""}</span></div>
       <div class="info-line">📛 フリガナ：<span>${loc.furigana || ""}</span></div>
       <div class="info-line">📞 担当番号：<a href="tel:${loc.phone}">${loc.phone}</a></div>
       <div class="info-line">📝 備考：<span>${loc.note || ""}</span></div>
+      <a class="info-link" href="${loc.image}" target="_blank">📄 名刺（PDF）を開く</a>
     </div>
   `;
 } else {
