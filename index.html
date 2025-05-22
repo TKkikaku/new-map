@@ -207,6 +207,8 @@
           <div class="info-line">📏 坪単価：<span>${loc.tsubo} 万円</span></div>
           <div class="info-line">👤 紹介元：<span>${loc.agency}</span></div>
         </div>
+        <div class="info-line">📝 備考：<span>${loc.memo || ""}</span></div>
+ </div>
       `;
       if (loc.city) citySet.add(loc.city);
     }
