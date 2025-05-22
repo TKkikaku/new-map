@@ -242,7 +242,7 @@
         const selectedCategory = document.getElementById("filter").value;
         const selectedCity = document.getElementById("cityFilter").value;
         allMarkers.forEach(({ marker, sheet, city }) => {
-          const matchCategory = selectedCategory === "all" || sheet === selectedCategory;
+          const matchCategory = selectedCategory && sheet === selectedCategory;
           const matchCity = !selectedCity || city === selectedCity;
           marker.setMap(matchCategory && matchCity ? map : null);
         });
