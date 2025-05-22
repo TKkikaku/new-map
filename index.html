@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>物件マップ</title>
     <link rel="icon" href="./logo_512x512.png" />
-    <link rel="manifest" href="./manifest.json" />
     <meta name="theme-color" content="#ffffff" />
     <style>
       body {
@@ -39,10 +38,9 @@
         font-weight: bold;
         margin-bottom: 2px;
       }
-      .info-window .info-category {
-        font-size: 11px;
-        color: #666;
-        margin-bottom: 6px;
+      .info-window .info-line {
+        margin: 2px 0;
+        font-size: 12px;
       }
       .info-window .info-link {
         display: inline-block;
@@ -52,26 +50,15 @@
         font-weight: bold;
         font-size: 12px;
       }
-      .info-window .info-line {
-        margin: 2px 0;
-        font-size: 12px;
-      }
-      .info-window .info-line span {
-        font-weight: normal;
-      }
       select {
         font-size: 1.4rem;
         padding: 6px;
         width: 100%;
         max-width: 300px;
       }
-      label {
-        font-size: 1.4rem;
-        display: block;
-        margin-bottom: 5px;
-      }
     </style>
   </head>
+
   <body>
     <div id="login-box">
       <h2>パスコードを入力してください</h2>
@@ -118,9 +105,6 @@
           document.getElementById("map").style.display = "block";
           document.querySelector(".filter-box").style.display = "block";
           document.querySelector(".city-filter-box").style.display = "block";
-          initMap();
-        } else {
-          error.textContent = "パスコードが違います";
         }
       }
 
@@ -131,7 +115,6 @@
           document.getElementById("map").style.display = "block";
           document.querySelector(".filter-box").style.display = "block";
           document.querySelector(".city-filter-box").style.display = "block";
-          initMap();
         }
       };
 
@@ -144,15 +127,8 @@
       function displayMarkers(locations) {
         map = new google.maps.Map(document.getElementById("map"), {
           center: { lat: 26.2124, lng: 127.6809 },
-          zoom: 10
+          zoom: 10,
         });
-
-        const cityOrder = [
-          "名護市","恩納村","金武町","宜野座村","本部町","今帰仁村","大宜味村","国頭村","東村",
-          "沖縄市","うるま市","浦添市","宜野湾市","読谷村","嘉手納町","北谷町","中城村","西原町",
-          "那覇市","豊見城市","糸満市","南風原町","与那原町","八重瀬町",
-          "石垣市","宮古島市","その他"
-        ];
 
         const citySet = new Set();
         const infoWindow = new google.maps.InfoWindow();
@@ -173,14 +149,10 @@
             position: { lat: loc.lat, lng: loc.lng },
             map: null,
             title: loc.name,
-            icon: {
-              url: iconUrl,
-              scaledSize: new google.maps.Size(60, 60)
-            }
+            icon: { url: iconUrl, scaledSize: new google.maps.Size(60, 60) }
           });
 
           let content = "";
-
           if (loc.sheet === "名刺") {
             content = `
               <div class="info-window">
@@ -192,8 +164,7 @@
                 <div class="info-line">📞 担当番号：<a href="tel:${loc.phone}">${loc.phone}</a></div>
                 <div class="info-line">📝 備考：<span>${loc.note || ""}</span></div>
                 <a class="info-link" href="${loc.image}" target="_blank">📄 名刺PDFを開く</a>
-              </div>
-            `;
+              </div>`;
           } else {
             content = `
               <div class="info-window">
@@ -204,8 +175,7 @@
                 <div class="info-line">📏 坪単価：<span>${loc.tsubo} 万円</span></div>
                 <div class="info-line">👤 紹介元：<span>${loc.agency}</span></div>
                 <div class="info-line">📝 備考：<span>${loc.note || ""}</span></div>
-              </div>
-            `;
+              </div>`;
             if (loc.city) citySet.add(loc.city);
           }
 
@@ -214,34 +184,24 @@
             infoWindow.open(map, marker);
           });
 
-          allMarkers.push({
-            marker,
-            sheet: loc.sheet,
-            city: loc.city || ""
-          });
+          allMarkers.push({ marker, sheet: loc.sheet, city: loc.city || "" });
         });
 
         const citySelect = document.getElementById("cityFilter");
         citySelect.innerHTML = '<option value="">選択</option>';
-        cityOrder.forEach(city => {
-          if (citySet.has(city)) {
-            const option = document.createElement("option");
-            option.value = city;
-            option.textContent = city;
-            citySelect.appendChild(option);
-          }
+        [...citySet].sort().forEach(city => {
+          const option = document.createElement("option");
+          option.value = city;
+          option.textContent = city;
+          citySelect.appendChild(option);
         });
       }
 
       function filterMarkers() {
         const selectedCategory = document.getElementById("filter").value;
         const selectedCity = document.getElementById("cityFilter").value;
-
         allMarkers.forEach(({ marker, sheet, city }) => {
-          if (!selectedCategory) {
-            marker.setMap(null);
-            return;
-          }
+          if (!selectedCategory) return marker.setMap(null);
           const matchCategory = sheet === selectedCategory;
           const matchCity = !selectedCity || city === selectedCity;
           marker.setMap(matchCategory && matchCity ? map : null);
@@ -249,8 +209,9 @@
       }
     </script>
 
-    <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap">
-    </script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDA_HvHFLoJO8Iib-ig100cnmP2XKE124E&callback=initMap"
+      async defer
+    ></script>
   </body>
 </html>
